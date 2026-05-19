@@ -1,0 +1,22 @@
+MARINFO - Lancement rapide
+
+1) Backend
+cd C:\Users\PC\Desktop\MARINFO_App_Complete\MARINFO\backend
+mvn spring-boot:run
+
+Attendre : Tomcat started on port 8080
+
+2) Frontend dans un autre terminal
+cd C:\Users\PC\Desktop\MARINFO_App_Complete\MARINFO\frontend
+npm install
+npm run dev
+
+Ouvrir : http://localhost:5173
+
+Comptes de test :
+Admin : admin@marinfo.ma / admin123
+Client : yassine@test.ma / client123
+
+Notes :
+- Cette version utilise H2 en mémoire, donc pas besoin de MySQL.
+- Si le port 8080 est occupé : netstat -ano | findstr :8080 puis taskkill /PID NUMERO /F
