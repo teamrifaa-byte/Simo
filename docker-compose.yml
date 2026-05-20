@@ -1,0 +1,54 @@
+services:
+
+  # ── 1. MySQL Database ───────────────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: marinfo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-marinfo}
+    ports:
+      - "3306:3306"             # expose so you can connect with DBeaver / Workbench
+    volumes:
+      - mysql_data:/var/lib/mysql                          # persist data between restarts
+      - ./database/schema_marinfo.sql:/docker-entrypoint-initdb.d/init.sql  # auto-import on first run
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── 2. Spring Boot Backend ─────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: marinfo-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy     # wait until MySQL is truly ready
+    environment:
+      # Override application.properties values at runtime
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-marinfo}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8080:8080"
+
+  # ── 3. React Frontend (Nginx) ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: marinfo-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"                 # access the app at http://localhost
+
+volumes:
+  mysql_data:

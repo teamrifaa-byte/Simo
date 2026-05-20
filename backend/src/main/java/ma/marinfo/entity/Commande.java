@@ -3,7 +3,6 @@ package ma.marinfo.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,10 +31,15 @@ public class Commande {
     private String etat = "EN_ATTENTE";
 
     private String adresseLivraison;
-
     private String villeLivraison;
-
     private String methodePaiement;
+
+    private String numero;
+
+    @Builder.Default
+    private boolean accuseRecu = false;
+
+    private LocalDateTime dateAccuse;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id")
